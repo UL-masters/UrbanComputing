@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 #  Automatic path and station name setup
 # Path to your current data file
-data_path = 'data/PRSA_Data_Aotizhongxin_20130301-20170228.csv'
+data_path = 'data/PRSA_Data_Wanshouxigong_20130301-20170228.csv'
 
 # Automatically extract station name from filename (e.g., Aotizhongxin)
 # Logic: Filename is "PRSA_Data_Aotizhongxin_...", split by underscore, take the 3rd element
