@@ -3,8 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, mean_absolute_error
-from forecastor import Forecaster
-
+from LSTM_multi_step import LSTMForecaster
 
 data_path = 'data/PRSA_Data_Wanshouxigong_20130301-20170228.csv'
 try:
@@ -13,7 +12,8 @@ try:
 except:
     station_name = "UnknownStation"
 
-output_folder = 'results/MultiOutput_XGBoost'
+# CHANGE FOLDER NAME DEPENDING ON FORECASTER
+output_folder = 'results/LSTM_multi'
 os.makedirs(output_folder, exist_ok=True)
 
 horizon_hours = 24  # forecast horizon
@@ -28,7 +28,7 @@ config = {
 }
 
 print(">>> Step 1: Preprocessing Data...")
-forecaster = Forecaster(config)
+forecaster = LSTMForecaster(config)
 X, y = forecaster.preprocess()
 
 # ==========================================
@@ -97,10 +97,10 @@ for i, idx in enumerate(indices):
     axes[i].set_title(f"Sample #{idx}")
 
 plt.suptitle(f"Multi-step ({horizon_hours}h) Forecast for {station_name}\n"
-             f"RMSE: {rmse:.2f} | Log-Transformed XGBoost", fontsize=15)
+             f"RMSE: {rmse:.2f} | Log-Transformed LSTM", fontsize=15)
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-save_path = os.path.join(output_folder, f"{station_name}_final_forecast.png")
+save_path = os.path.join(output_folder, f"{station_name}_LSTM_multi.png")
 plt.savefig(save_path, dpi=300)
 print(f"Chart saved to: {save_path}")
 plt.show()
