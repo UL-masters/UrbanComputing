@@ -69,7 +69,7 @@ print(f"\nEvaluation Results (Horizon={horizon_hours}):")
 print(f"  RMSE: {rmse:.4f}")
 print(f"  MAE:  {mae:.4f}")
 
-# --- Plotting (Inspired by Figure 5 in the paper) ---
+# --- Plotting (Inspired by Figure 9 in the paper) ---
 def plot_trajectory(ax, truth, prediction, start_idx, horizon):
     hours = range(1, horizon + 1)
     ax.plot(hours, truth, color='#ff7f0e', label='Truth', linewidth=2, marker='o', markersize=3)
