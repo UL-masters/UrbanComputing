@@ -18,7 +18,7 @@ except:
 output_folder = 'results/ARIMA_multi'
 os.makedirs(output_folder, exist_ok=True)
 
-horizon_hours = 24  # forecast horizon
+horizon_hours = 24 # forecast horizon
 arima_order = (5, 1, 0)  # adjust as needed
 target_column = 'PM2.5'
 

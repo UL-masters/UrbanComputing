@@ -3,6 +3,8 @@ import numpy as np
 import xgboost as xgb
 from sklearn.multioutput import MultiOutputRegressor
 
+# ---- WITH DRIFT DETECTION -----
+
 class Forecaster:
 
     def __init__(self, config):
