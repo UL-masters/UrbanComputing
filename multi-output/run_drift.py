@@ -14,7 +14,7 @@ try:
 except:
     station_name = "UnknownStation"
 
-output_folder = 'results/MultiOutput_XGBoost'
+output_folder = 'results/MultiOutput_XGBoost_drift'
 os.makedirs(output_folder, exist_ok=True)
 
 horizon_hours = 24  # forecast horizon
@@ -137,7 +137,7 @@ for i, idx in enumerate(indices):
     plot_trajectory(axes[i], y_test[idx], y_pred[idx], start_idx=idx, horizon=horizon_hours)
     axes[i].set_title(f"Sample #{idx}")
 
-plt.suptitle(f"Multi-step ({horizon_hours}h) Forecast for {station_name}\n"
+plt.suptitle(f"Multi-step ({horizon_hours}h) Forecast for {station_name} with Drift Detecion\n"
              f"RMSE: {rmse:.2f} | Log-Transformed XGBoost", fontsize=15)
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 

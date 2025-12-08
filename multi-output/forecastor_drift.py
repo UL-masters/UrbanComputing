@@ -18,7 +18,7 @@ class Forecaster:
         self.model = None
 
     def fit(self, X_train, y_train, X_val=None, y_val=None):
-        print(f"Training XGBoost Model (Multi-output)...")
+        print(f"Training XGBoost Model (Multi-output) with drift detection...")
         
         # 1. Target Transformation: Log-transform
         y_train_log = np.log1p(y_train)
