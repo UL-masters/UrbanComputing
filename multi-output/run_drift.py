@@ -7,6 +7,8 @@ from forecastor import Forecaster
 
 # ---- WITH DRIFT DETECTION -----
 
+DRIFT_STRATEGY = 'full refit'
+
 data_path = 'data/PRSA_Data_Wanshouxigong_20130301-20170228.csv'
 try:
     file_name = os.path.basename(data_path)
@@ -14,7 +16,7 @@ try:
 except:
     station_name = "UnknownStation"
 
-output_folder = 'results/MultiOutput_XGBoost_drift'
+output_folder = 'multi-output/results/MultiOutput_XGBoost_drift'
 os.makedirs(output_folder, exist_ok=True)
 
 horizon_hours = 24  # forecast horizon
@@ -60,12 +62,12 @@ forecaster.fit(X_train, y_train, X_val, y_val)
 # ==========================================
 # 4. Drift-Adaptive Rolling Forecast
 # ==========================================
-print(">>> Step 3: Drift-Adaptive Forecasting...")
+print(">>> Step 3: Drift-Adaptive Forecasting with strategy: ", DRIFT_STRATEGY)
 
 predictions = []
 errors = []
 
-update_stride = 250   
+update_stride = 1000   
 drift_threshold = 12.0  # PM2.5 error threshold
 
 for t in range(0, len(X_test), update_stride):
@@ -92,11 +94,14 @@ for t in range(0, len(X_test), update_stride):
     # 3. Adaptation Strategy (CHOOSE ONE)
     
     # ---- OPTIONS: FULL REFIT, PARTIAL REFIT, RETRAIN ----
-    if drift:
-        forecaster.retrain_recent(X_train_full, y_train_full, window_size=5000)
-    else:
-        forecaster.full_refit(X_batch, y_batch) # changable function
-
+    if drift and DRIFT_STRATEGY == 'full refit':
+        forecaster.full_refit(X_batch, y_batch)
+    elif drift and DRIFT_STRATEGY == 'partial refit':
+        forecaster.partial_refit(X_batch, y_batch)
+    elif drift and DRIFT_STRATEGY == 'retrain':
+        forecaster.retrain_recent(X_batch, y_batch)
+        
+        
 # Stack all batch predictions into final array
 y_pred = np.vstack(predictions)
 
@@ -137,7 +142,7 @@ for i, idx in enumerate(indices):
     plot_trajectory(axes[i], y_test[idx], y_pred[idx], start_idx=idx, horizon=horizon_hours)
     axes[i].set_title(f"Sample #{idx}")
 
-plt.suptitle(f"Multi-step ({horizon_hours}h) Forecast for {station_name} with Drift Detecion\n"
+plt.suptitle(f"Multi-step ({horizon_hours}h) Forecast for {station_name} with {DRIFT_STRATEGY}\n"
              f"RMSE: {rmse:.2f} | Log-Transformed XGBoost", fontsize=15)
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 

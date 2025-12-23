@@ -43,7 +43,7 @@ class Forecaster:
             colsample_bytree=0.8,
             n_jobs=-1, 
             random_state=42,
-            early_stopping_rounds=early_stopping_rounds 
+            #early_stopping_rounds=early_stopping_rounds 
         )
         
         # train the model
@@ -51,6 +51,7 @@ class Forecaster:
             self.model.fit(
                 X_train, y_train_log,
                 eval_set=eval_set,
+                early_stopping_rounds=early_stopping_rounds,
                 verbose=100
             )
         else:
@@ -97,11 +98,17 @@ class Forecaster:
     def partial_refit(self, X_new, y_new):
         print("PARTIAL REFIT triggered")
 
-        self.model.fit(
-            X_new,
-            np.log1p(y_new),
-            xgb_model=self.model
-        )
+        # 1. Get current model parameters (except callbacks / early stopping)
+        safe_params = {k: v for k, v in self.model.get_params().items()
+                    if k not in ["early_stopping_rounds", "callbacks"]}
+
+        # 2. Create a brand-new XGBRegressor (completely clean)
+        self.model = xgb.XGBRegressor(**safe_params)
+
+        # 3. Fit WITHOUT any eval_set / early stopping
+        self.model.fit(X_new, np.log1p(y_new), verbose=False)
+
+
 
 
     # -----------------------------
