@@ -8,14 +8,14 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 # -----------------------------
 # Configuration
 # -----------------------------
-data_path = 'data/PRSA_Data_Wanshouxigong_20130301-20170228.csv'
+data_path = 'data/PRSA_Data_Wanliu_20130301-20170228.csv'
 try:
     file_name = os.path.basename(data_path)
     station_name = file_name.split('_')[2]
 except:
     station_name = "UnknownStation"
 
-output_folder = 'results/ARIMA_multi'
+output_folder = 'results/ARIMA'
 os.makedirs(output_folder, exist_ok=True)
 
 horizon_hours = 24 # forecast horizon
