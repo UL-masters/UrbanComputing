@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from LSTM_multi_step import LSTMForecaster
 
-data_path = 'data/PRSA_Data_Wanshouxigong_20130301-20170228.csv'
+data_path = 'data/PRSA_Data_Wanliu_20130301-20170228.csv'
 try:
     file_name = os.path.basename(data_path)
     station_name = file_name.split('_')[2]
@@ -13,7 +13,7 @@ except:
     station_name = "UnknownStation"
 
 # CHANGE FOLDER NAME DEPENDING ON FORECASTER
-output_folder = 'results/LSTM_multi'
+output_folder = 'results/LSTM'
 os.makedirs(output_folder, exist_ok=True)
 
 horizon_hours = 24  # forecast horizon
@@ -100,7 +100,7 @@ plt.suptitle(f"Multi-step ({horizon_hours}h) Forecast for {station_name}\n"
              f"RMSE: {rmse:.2f} | Log-Transformed LSTM", fontsize=15)
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-save_path = os.path.join(output_folder, f"{station_name}_LSTM_multi.png")
+save_path = os.path.join(output_folder, f"{station_name}_LSTM.png")
 plt.savefig(save_path, dpi=300)
 print(f"Chart saved to: {save_path}")
 plt.show()
