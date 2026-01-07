@@ -11,11 +11,11 @@ import time
 # ==========================================
 # Options: 'full_refit', 'partial_refit', 'retrain'
 # NOTE: This strategy is ONLY executed when drift is DETECTED.
-DRIFT_STRATEGY = 'retrain' 
+DRIFT_STRATEGY = 'partial_refit' 
 
 # Experiment Parameters
 horizon_hours = 24 
-drift_threshold = 30  # [NEW] MAE Threshold. If error > 12, trigger update.
+drift_threshold = 30  # [NEW] MAE Threshold. If error > 30, trigger update.
 val_window_hours = 24 * 30 
 
 config = {

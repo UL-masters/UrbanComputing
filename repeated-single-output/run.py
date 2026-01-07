@@ -22,7 +22,6 @@ config = {
     'max_window_size': 72,  
     'horizon': horizon_hours, 
     'target_column': 'PM2.5',
-    # Ensure this path matches your file structure
     'data_path': '../data/PRSA_Data_Wanshouxigong_20130301-20170228.csv'
 }
 
