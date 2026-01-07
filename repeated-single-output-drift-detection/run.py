@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, mean_absolute_error
-from forecastor import Forecaster
+from forecaster import Forecaster
 import time
 
 # ==========================================
@@ -11,11 +11,11 @@ import time
 # ==========================================
 # Options: 'full_refit', 'partial_refit', 'retrain'
 # NOTE: This strategy is ONLY executed when drift is DETECTED.
-DRIFT_STRATEGY = 'partial_refit' 
+DRIFT_STRATEGY = 'retrain' 
 
 # Experiment Parameters
 horizon_hours = 24 
-drift_threshold = 12.0  # [NEW] MAE Threshold. If error > 12, trigger update.
+drift_threshold = 30  # [NEW] MAE Threshold. If error > 12, trigger update.
 val_window_hours = 24 * 30 
 
 config = {
@@ -168,8 +168,15 @@ truths = np.array(all_truths)
 rmse = mean_squared_error(truths, preds) ** 0.5
 mae = mean_absolute_error(truths, preds)
 
+filename = os.path.basename(config['data_path'])
+try:
+    station_name = filename.split('_')[2]
+except IndexError:
+    station_name = "UnknownStation"
+
 print(f"\n==========================================")
 print(f"FINAL RESULTS: Active Detection ({DRIFT_STRATEGY})")
+print(f"Station: {station_name}")
 print(f"==========================================")
 print(f"Total Drift Events Detected: {len(drift_events)}")
 print(f"RMSE: {rmse:.4f}")
@@ -199,7 +206,14 @@ for i, idx in enumerate(plot_indices):
     axes[i].legend()
     axes[i].grid(True, alpha=0.3)
 
-plt.suptitle(f"Active Drift Detection ({DRIFT_STRATEGY} | Threshold={drift_threshold})\nDetected {len(drift_events)} Drifts | RMSE: {rmse:.2f}", fontsize=16)
+# --- [UPDATE] Title with Station Name ---
+plt.suptitle(f"Station: {station_name} | Strategy: {DRIFT_STRATEGY}\nThreshold={drift_threshold} | Drifts: {len(drift_events)} | RMSE: {rmse:.2f}", fontsize=16)
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-plt.savefig(os.path.join(config['save_base'], 'drift_detection_results.png'))
-plt.show() 
+
+# --- [UPDATE] Dynamic Filename ---
+save_filename = f'drift_detection_{station_name}_{DRIFT_STRATEGY}.png'
+save_path = os.path.join(config['save_base'], save_filename)
+plt.savefig(save_path)
+print(f"Result plot saved to: {save_path}")
+
+plt.show()
