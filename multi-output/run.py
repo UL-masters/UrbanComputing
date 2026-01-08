@@ -13,7 +13,7 @@ try:
 except:
     station_name = "UnknownStation"
 
-output_folder = 'results/MultiOutput_XGBoost'
+output_folder = 'multi-output/results/MultiOutput_XGBoost'
 os.makedirs(output_folder, exist_ok=True)
 
 horizon_hours = 24  # forecast horizon
@@ -100,7 +100,7 @@ plt.suptitle(f"Multi-step ({horizon_hours}h) Forecast for {station_name}\n"
              f"RMSE: {rmse:.2f} | Log-Transformed XGBoost", fontsize=15)
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-save_path = os.path.join(output_folder, f"{station_name}_final_forecast.png")
+save_path = os.path.join(output_folder, f"{station_name}_Multi_Output.png")
 plt.savefig(save_path, dpi=300)
 print(f"Chart saved to: {save_path}")
 plt.show()
