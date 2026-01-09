@@ -31,16 +31,15 @@ print(">>> Step 1: Preprocessing Data...")
 forecaster = Forecaster(config)
 X, y = forecaster.preprocess()
 
-# ==========================================
-# 2. data split (Train / Validation / Test)
-# ==========================================
-#  Holdout Method
-# 1. get Test Set 
+
+# DATA SPLIT 
+
+# get Test Set 
 test_split_idx = int(len(X) * 0.8)
 X_train_full, y_train_full = X[:test_split_idx], y[:test_split_idx]
 X_test, y_test = X[test_split_idx:], y[test_split_idx:]
 
-# 2. get Validation Set from remaining data (last 10% for validation)
+# get Validation Set from remaining data (last 10% for validation)
 val_split_idx = int(len(X_train_full) * 0.9)
 X_train, y_train = X_train_full[:val_split_idx], y_train_full[:val_split_idx]
 X_val, y_val = X_train_full[val_split_idx:], y_train_full[val_split_idx:]
@@ -50,9 +49,8 @@ print(f"  Train: {X_train.shape[0]} samples")
 print(f"  Valid: {X_val.shape[0]} samples (Used for Early Stopping)")
 print(f"  Test:  {X_test.shape[0]} samples")
 
-# ==========================================
-# 3. Training (with Early Stopping)
-# ==========================================
+
+# Training (with Early Stopping)
 print(">>> Step 2: Training...")
 # Pass validation set to enable early stopping
 forecaster.fit(X_train, y_train, X_val, y_val)
@@ -60,9 +58,8 @@ forecaster.fit(X_train, y_train, X_val, y_val)
 print(">>> Step 3: Predicting...")
 y_pred = forecaster.predict(X_test)
 
-# ==========================================
-# 4. Evaluation & Visualization
-# ==========================================
+
+#  Evaluation & Visualization
 rmse = mean_squared_error(y_test, y_pred) ** 0.5
 mae = mean_absolute_error(y_test, y_pred)
 print(f"\nEvaluation Results (Horizon={horizon_hours}):")

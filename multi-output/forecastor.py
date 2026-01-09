@@ -18,7 +18,7 @@ class Forecaster:
     def fit(self, X_train, y_train, X_val=None, y_val=None):
         print(f"Training XGBoost Model (Multi-output)...")
         
-        # 1. Target Transformation: Log-transform
+        #  Target Transformation: Log-transform
         y_train_log = np.log1p(y_train)
         
         eval_set = None
@@ -27,7 +27,7 @@ class Forecaster:
         if X_val is not None and y_val is not None:
             y_val_log = np.log1p(y_val)
             eval_set = [(X_train, y_train_log), (X_val, y_val_log)]
-            early_stopping_rounds = 50 # Enable Early Stopping
+            early_stopping_rounds = 50 # enable early stopping
             print("Validation set provided. Early stopping enabled.")
         
         # Model Initialization
@@ -71,7 +71,7 @@ class Forecaster:
 
 
     # -----------------------------
-    # Full Refit (All Data)
+    # Full Refit 
     # -----------------------------
     def full_refit(self, X_all, y_all):
         print("FULL REFIT triggered")
@@ -90,7 +90,7 @@ class Forecaster:
 
 
     # -----------------------------
-    # Partial Refit (Incremental Boosting)
+    # Partial Refit 
     # -----------------------------
     def partial_refit(self, X_new, y_new):
         print("PARTIAL REFIT triggered")
@@ -103,7 +103,7 @@ class Forecaster:
 
 
     # -----------------------------
-    # Retrain on Recent Window Only
+    # Retrain 
     # -----------------------------
     def retrain_recent(self, X_all, y_all, window_size=5000):
         print("RECENT-WINDOW RETRAIN triggered")
@@ -127,27 +127,27 @@ class Forecaster:
         print(f"Loading data from: {self.data_path}")
         df = pd.read_csv(self.data_path)
         
-        #  Timestamp Processing 
+        # timestamp processing
         if {'year', 'month', 'day', 'hour'}.issubset(df.columns):
             df['date'] = pd.to_datetime(df[['year', 'month', 'day', 'hour']])
         else:
             df['date'] = pd.to_datetime(df.iloc[:, 0])
         df = df.sort_values('date').reset_index(drop=True)
         
-        # Missing Value Handling 
+        # handle missing vals 
         numeric_cols = df.select_dtypes(include=[np.number]).columns
         df[numeric_cols] = df[numeric_cols].interpolate(method='linear').fillna(method='bfill').fillna(method='ffill')
 
-        # Feature Engineering
+        # feature engineering
         print("Generating advanced features...")
         
-        # Time Cycle Encoding
+        # time cycle encoding
         df['hour_sin'] = np.sin(2 * np.pi * df['date'].dt.hour / 24)
         df['hour_cos'] = np.cos(2 * np.pi * df['date'].dt.hour / 24)
         df['month_sin'] = np.sin(2 * np.pi * df['date'].dt.month / 12)
         df['month_cos'] = np.cos(2 * np.pi * df['date'].dt.month / 12)
         
-        # Rolling Statistics Features
+        # rolling statistics
         target = self.target_column
         for w in [6, 12, 24]:
             df[f'roll_mean_{w}'] = df[target].rolling(window=w).mean()

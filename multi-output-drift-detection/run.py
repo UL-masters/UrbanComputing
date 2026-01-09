@@ -31,9 +31,8 @@ print(">>> MULTI-OUTPUT DRIFT DETECTION MODE")
 print(f"    Strategy: {DRIFT_STRATEGY.upper()}")
 print(f"    Drift Threshold (MAE): {drift_threshold}")
 
-# ==========================================
-# 2. Train / Validation Split
-# ==========================================
+
+# Train / Validation Split
 def train_val_split(X, y, val_hours):
     if len(X) <= val_hours:
         split = int(len(X) * 0.8)
@@ -41,9 +40,7 @@ def train_val_split(X, y, val_hours):
         split = len(X) - val_hours
     return X[:split], y[:split], X[split:], y[split:]
 
-# ==========================================
-# 3. Initialization
-# ==========================================
+
 forecaster = Forecaster(config)
 X_all, y_all = forecaster.preprocess()
 
@@ -55,16 +52,14 @@ X_test, y_test = X_all[split_idx:], y_all[split_idx:]
 print(f"Total samples: {len(X_all)}")
 print(f"Initial train size: {len(X_train)}")
 
-# ==========================================
-# 4. Initial Training
-# ==========================================
+
+# Initial Training
 print(">>> Phase 1: Initial Training")
 X_tr, y_tr, X_val, y_val = train_val_split(X_train, y_train, val_window_hours)
 forecaster.fit(X_tr, y_tr, X_val, y_val)
 
-# ==========================================
-# 5. Drift-Aware Prediction Loop (Optimized)
-# ==========================================
+
+# Drift-Aware Prediction 
 print(">>> Phase 2: Drift-Aware Forecasting (Optimized Partial Refit)")
 
 all_predictions = []
@@ -74,15 +69,13 @@ drift_events = []
 prev_pred = None
 start_time = time.time()
 
-# Increase cooldown to avoid too frequent partial refits
 COOLDOWN_STEPS = 2 * horizon_hours
 last_drift_step = -np.inf
 
 for i in range(len(X_test)):
 
-    # --------------------------
-    # A. Drift Detection (rolling window)
-    # --------------------------
+    
+    # Drift Detection (rolling window)
     if prev_pred is not None:
         # Use last 3 predictions for drift detection to reduce false alarms
         window_size = min(3, i)
@@ -111,9 +104,6 @@ for i in range(len(X_test)):
                     n_new_trees=5  # small increment
                 )
 
-            # --------------------------
-            # Other strategies if needed
-            # --------------------------
             elif DRIFT_STRATEGY == 'full refit':
                 X_tr, y_tr, X_val, y_val = train_val_split(
                     X_all[:split_idx + i],

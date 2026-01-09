@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, mean_absolute_error
-from LSTM_multi_step import LSTMForecaster
+from LSTM import LSTMForecaster
 
 data_path = 'data/PRSA_Data_Wanshouxigong_20130301-20170228.csv'
 try:
@@ -32,15 +32,14 @@ forecaster = LSTMForecaster(config)
 X, y = forecaster.preprocess()
 
 # ==========================================
-# 2. data split (Train / Validation / Test)
+# data split (Train / Validation / Test)
 # ==========================================
-#  Holdout Method
-# 1. get Test Set 
+#  Holdout Method - get Test Set 
 test_split_idx = int(len(X) * 0.8)
 X_train_full, y_train_full = X[:test_split_idx], y[:test_split_idx]
 X_test, y_test = X[test_split_idx:], y[test_split_idx:]
 
-# 2. get Validation Set from remaining data (last 10% for validation)
+#  get Validation Set from remaining data (last 10% for validation)
 val_split_idx = int(len(X_train_full) * 0.9)
 X_train, y_train = X_train_full[:val_split_idx], y_train_full[:val_split_idx]
 X_val, y_val = X_train_full[val_split_idx:], y_train_full[val_split_idx:]
@@ -50,9 +49,8 @@ print(f"  Train: {X_train.shape[0]} samples")
 print(f"  Valid: {X_val.shape[0]} samples (Used for Early Stopping)")
 print(f"  Test:  {X_test.shape[0]} samples")
 
-# ==========================================
-# 3. Training (with Early Stopping)
-# ==========================================
+
+#  Training (with Early Stopping)
 print(">>> Step 2: Training...")
 # Pass validation set to enable early stopping
 forecaster.fit(X_train, y_train, X_val, y_val)
@@ -60,16 +58,15 @@ forecaster.fit(X_train, y_train, X_val, y_val)
 print(">>> Step 3: Predicting...")
 y_pred = forecaster.predict(X_test)
 
-# ==========================================
-# 4. Evaluation & Visualization
-# ==========================================
+
+#  Evaluation & Visualization
 rmse = mean_squared_error(y_test, y_pred) ** 0.5
 mae = mean_absolute_error(y_test, y_pred)
 print(f"\nEvaluation Results (Horizon={horizon_hours}):")
 print(f"  RMSE: {rmse:.4f}")
 print(f"  MAE:  {mae:.4f}")
 
-# --- Plotting (Inspired by Figure 5 in the paper) ---
+# Plotting (Inspired by Figure 5 in the paper) 
 def plot_trajectory(ax, truth, prediction, start_idx, horizon):
     hours = range(1, horizon + 1)
     ax.plot(hours, truth, color='#ff7f0e', label='Truth', linewidth=2, marker='o', markersize=3)

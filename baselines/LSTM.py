@@ -25,14 +25,13 @@ class LSTMForecaster:
         self.data_path = config['data_path']
         self.model = None
 
-    # --------------------------------------------------------
+   
     # PREPROCESSING
-    # --------------------------------------------------------
     def preprocess(self):
         print(f"Loading data from: {self.data_path}")
         df = pd.read_csv(self.data_path)
 
-        # --- Timestamp processing ---
+        #  Timestamp processing 
         if {'year', 'month', 'day', 'hour'}.issubset(df.columns):
             df['date'] = pd.to_datetime(df[['year', 'month', 'day', 'hour']])
         else:
@@ -40,18 +39,18 @@ class LSTMForecaster:
 
         df = df.sort_values('date').reset_index(drop=True)
 
-        # --- Missing values (NO FUTURE LEAKAGE) ---
+        #  Missing values
         numeric_cols = df.select_dtypes(include=[np.number]).columns
         df[numeric_cols] = df[numeric_cols].interpolate(method='linear')
         df[numeric_cols] = df[numeric_cols].ffill().bfill()
 
-        # --- Time encoding ---
+        # Time encoding 
         df['hour_sin'] = np.sin(2 * np.pi * df['date'].dt.hour / 24)
         df['hour_cos'] = np.cos(2 * np.pi * df['date'].dt.hour / 24)
         df['month_sin'] = np.sin(2 * np.pi * df['date'].dt.month / 12)
         df['month_cos'] = np.cos(2 * np.pi * df['date'].dt.month / 12)
 
-        # --- Rolling features ---
+        #  Rolling features 
         target = self.target_column
         for w in [6, 12, 24]:
             df[f'roll_mean_{w}'] = df[target].rolling(window=w).mean()
@@ -59,7 +58,7 @@ class LSTMForecaster:
 
         df = df.ffill().bfill()
 
-        # --- Feature list ---
+        #  Feature list 
         feature_cols = [
             'hour_sin', 'hour_cos',
             'month_sin', 'month_cos',
@@ -86,9 +85,8 @@ class LSTMForecaster:
         return X, y
 
 
-    # --------------------------------------------------------
+    
     # MODEL DEFINITION
-    # --------------------------------------------------------
     def build_model(self, input_shape):
         print("Building LSTM model...")
 
@@ -110,9 +108,8 @@ class LSTMForecaster:
         print(model.summary())
 
 
-    # --------------------------------------------------------
+    
     # TRAINING
-    # --------------------------------------------------------
     def fit(self, X_train, y_train, X_val, y_val):
         print("Training LSTM model...")
 
@@ -143,18 +140,16 @@ class LSTMForecaster:
         print("LSTM training finished.")
 
 
-    # --------------------------------------------------------
+   
     # PREDICTION
-    # --------------------------------------------------------
     def predict(self, X_test):
         pred_log = self.model.predict(X_test)
         return np.expm1(pred_log)   # inverse log
 
 
 
-# ============================================================
+
 # LSTM SEQUENCE CREATOR
-# ============================================================
 
 def create_lstm_instances(df, window_size, horizon, target_column, feature_cols):
     X = []

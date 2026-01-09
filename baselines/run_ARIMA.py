@@ -5,9 +5,8 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
-# -----------------------------
+
 # Configuration
-# -----------------------------
 data_path = 'data/PRSA_Data_Wanshouxigong_20130301-20170228.csv'
 try:
     file_name = os.path.basename(data_path)
@@ -19,12 +18,11 @@ output_folder = 'baselines/results/ARIMA'
 os.makedirs(output_folder, exist_ok=True)
 
 horizon_hours = 24 # forecast horizon
-arima_order = (5, 1, 0)  # adjust as needed
+arima_order = (5, 1, 0)  
 target_column = 'PM2.5'
 
-# -----------------------------
+
 # Load data
-# -----------------------------
 df = pd.read_csv(data_path)
 series = df[target_column].interpolate().ffill().bfill().values
 
@@ -33,17 +31,15 @@ test_size = int(len(series) * 0.2)
 train_series = series[:-test_size]
 test_series = series[-test_size:]
 
-# -----------------------------
+
 # Fit ARIMA
-# -----------------------------
 print("Fitting ARIMA...")
 model = ARIMA(train_series, order=arima_order)
 model_fit = model.fit()
 print(model_fit.summary())
 
-# -----------------------------
+
 # Multi-step forecasts for plotting
-# -----------------------------
 preds_list = []
 truth_list = []
 window_size = horizon_hours
@@ -58,18 +54,16 @@ for start_idx in range(0, len(test_series) - window_size, window_size):
 preds_array = np.array(preds_list)
 truth_array = np.array(truth_list)
 
-# -----------------------------
+
 # Evaluation
-# -----------------------------
 rmse = np.sqrt(mean_squared_error(truth_array.flatten(), preds_array.flatten()))
 mae = mean_absolute_error(truth_array.flatten(), preds_array.flatten())
 print(f"\nEvaluation Results (Horizon={horizon_hours}):")
 print(f"  RMSE: {rmse:.2f}")
 print(f"  MAE:  {mae:.2f}")
 
-# -----------------------------
-# Plotting (like your LSTM plots)
-# -----------------------------
+
+# Plotting 
 def plot_trajectory(ax, truth, prediction, horizon, sample_idx):
     hours = range(1, horizon + 1)
     ax.plot(hours, truth, color='#ff7f0e', label='Truth', linewidth=2, marker='o', markersize=3)
