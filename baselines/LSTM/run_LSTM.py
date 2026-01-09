@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, mean_absolute_error
-from LSTM import LSTMForecaster
+from baselines.LSTM.LSTM import LSTMForecaster
 
 data_path = 'data/PRSA_Data_Wanshouxigong_20130301-20170228.csv'
 try:
