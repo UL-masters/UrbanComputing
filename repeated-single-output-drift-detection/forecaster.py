@@ -37,7 +37,7 @@ class Forecaster:
             if not warm_start:
                 early_stopping_rounds = 50
         
-        # --- Drift Adaptation Logic ---
+        # Drift Adaptation Logic
         
         if warm_start and self.model is not None:
             print("    >>> [Partial Refit] Updating existing model weights...")
@@ -51,16 +51,12 @@ class Forecaster:
             
             print(f"        Extending model: {current_trees} -> {new_n_estimators} trees")
             
-            # 3. [FINAL FIX] Enable warm_start=True on the instance!
-            # This tells XGBoost: "Don't start from 0. Just add the difference."
-            # Also disable early_stopping since we typically don't use val set in partial refit.
             self.model.set_params(
                 n_estimators=new_n_estimators,
                 warm_start=True, 
                 early_stopping_rounds=None
             )
             
-            # 4. Fit WITHOUT passing xgb_model explicitly.
             # The instance already holds the booster internally because we reused 'self.model'.
             self.model.fit(
                 X_train, y_train_log, 
@@ -95,15 +91,6 @@ class Forecaster:
             )
 
     def detect_drift(self, y_true, y_pred, threshold=15.0):
-        """
-        Drift Detection Logic:
-        Compares the ground truth of the *just completed* window with the 
-        prediction made *horizon* steps ago.
-        
-        Returns:
-            detected (bool): True if drift is detected (Error > Threshold)
-            metric (float): The calculated error (MAE)
-        """
         # Calculate Mean Absolute Error for the recent batch
         mae = np.mean(np.abs(y_true - y_pred))
         
@@ -151,7 +138,6 @@ class Forecaster:
         return df
 
     def predict_single_step_vector(self, current_history, exogenous_features):
-        """Helper for manual recursive loop in run.py"""
         input_vector = []
         input_vector.extend(current_history[-self.max_window_size:]) 
         input_vector.extend(exogenous_features)
@@ -161,7 +147,6 @@ class Forecaster:
         return np.expm1(pred_log)
 
     def _make_instances(self, df, horizon):
-        """Helper for data creation"""
         X, y = [], []
         target = df[self.target_column].values
         feats = df[self.feature_cols].values

@@ -6,12 +6,9 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from forecaster import Forecaster
 import time
 
-# ==========================================
 # 1. Configuration & Strategy
-# ==========================================
 # Options: 'full_refit', 'partial_refit', 'retrain'
-# NOTE: This strategy is ONLY executed when drift is DETECTED.
-DRIFT_STRATEGY = 'partial_refit' 
+DRIFT_STRATEGY = 'full_refit' 
 
 # Experiment Parameters
 horizon_hours = 24 
@@ -33,9 +30,7 @@ print(f">>> Active Drift Detection Mode")
 print(f"    Strategy on Drift: {DRIFT_STRATEGY.upper()}")
 print(f"    Detection Threshold (MAE): {drift_threshold}")
 
-# ==========================================
-# 2. Helper: Train/Validation Split
-# ==========================================
+# 2. Train/Val Split
 def get_train_val_data(forecaster, subset_df, val_hours):
     X_all, y_all = forecaster._make_instances(subset_df, horizon=1)
     
@@ -46,9 +41,7 @@ def get_train_val_data(forecaster, subset_df, val_hours):
         
     return X_all[:split_point], y_all[:split_point], X_all[split_point:], y_all[split_point:]
 
-# ==========================================
 # 3. Initialization
-# ==========================================
 forecaster = Forecaster(config)
 df_full = forecaster.preprocess()
 
@@ -59,15 +52,12 @@ train_initial_end = split_idx
 print(f"Total Data: {len(df_full)}")
 print(f"Initial Training End: {train_initial_end}")
 
-# --- Phase 1: Initial Training ---
 print(">>> Phase 1: Initial Training (Base Model)...")
 initial_df = df_full.iloc[:train_initial_end]
 X_train, y_train, X_val, y_val = get_train_val_data(forecaster, initial_df, val_window_hours)
 forecaster.fit(X_train, y_train, X_val, y_val, warm_start=False)
 
-# ==========================================
 # 4. Drift-Aware Prediction Loop
-# ==========================================
 print(">>> Phase 2: Dynamic Forecasting with ACTIVE Detection...")
 
 all_predictions = []
@@ -89,7 +79,6 @@ start_time = time.time()
 
 while current_t < len(df_full) - horizon_hours:
     
-    # --- A. DRIFT DETECTION STEP ---
     # We can only detect drift if we have a previous prediction to verify
     drift_detected = False
     current_mae = 0.0
@@ -110,7 +99,7 @@ while current_t < len(df_full) - horizon_hours:
             print(f"    [!] DRIFT DETECTED at time {current_t} | MAE: {current_mae:.2f} > {drift_threshold}")
             drift_events.append(current_t)
             
-            # --- B. ADAPTATION (Triggered by Drift) ---
+            # ADAPTATION (Triggered by Drift)
             print(f"        -> Executing Strategy: {DRIFT_STRATEGY}...")
             
             if DRIFT_STRATEGY == 'full_refit':
@@ -159,9 +148,7 @@ while current_t < len(df_full) - horizon_hours:
 
 print(f"Simulation finished in {time.time() - start_time:.2f} seconds.")
 
-# ==========================================
 # 5. Final Evaluation
-# ==========================================
 preds = np.array(all_predictions)
 truths = np.array(all_truths)
 
@@ -206,11 +193,9 @@ for i, idx in enumerate(plot_indices):
     axes[i].legend()
     axes[i].grid(True, alpha=0.3)
 
-# --- [UPDATE] Title with Station Name ---
 plt.suptitle(f"Station: {station_name} | Strategy: {DRIFT_STRATEGY}\nThreshold={drift_threshold} | Drifts: {len(drift_events)} | RMSE: {rmse:.2f}", fontsize=16)
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-# --- [UPDATE] Dynamic Filename ---
 save_filename = f'drift_detection_{station_name}_{DRIFT_STRATEGY}.png'
 save_path = os.path.join(config['save_base'], save_filename)
 plt.savefig(save_path)

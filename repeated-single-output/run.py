@@ -6,11 +6,9 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from forecaster import Forecaster
 import time
 
-# ==========================================
 # 1. Configuration
-# ==========================================
 # Strategy: STATIC (No Drift Detection, No Retraining)
-# We train ONCE on the training set, and predict the whole test set.
+
 
 horizon_hours = 24 
 val_window_hours = 24 * 30  # Validation: Last 30 days of training data
@@ -28,9 +26,7 @@ config = {
 os.makedirs(config['save_base'], exist_ok=True)
 print(f">>> Running Strategy: STATIC (No Drift Adaptation)")
 
-# ==========================================
-# 2. Helper: Train/Validation Split
-# ==========================================
+# 2. Train/Validation Split
 def get_train_val_data(forecaster, subset_df, val_hours):
     """
     Splits the data into Training and Validation sets.
@@ -46,9 +42,7 @@ def get_train_val_data(forecaster, subset_df, val_hours):
         
     return X_all[:split_point], y_all[:split_point], X_all[split_point:], y_all[split_point:]
 
-# ==========================================
 # 3. Initialization
-# ==========================================
 forecaster = Forecaster(config)
 df_full = forecaster.preprocess()
 
@@ -59,9 +53,7 @@ train_initial_end = split_idx
 print(f"Total Data Points: {len(df_full)}")
 print(f"Training End / Test Start Index: {train_initial_end}")
 
-# ==========================================
 # 4. Phase 1: Train ONCE (Static Model)
-# ==========================================
 print(">>> Phase 1: Training Static Model...")
 initial_df = df_full.iloc[:train_initial_end]
 
@@ -71,9 +63,7 @@ X_train, y_train, X_val, y_val = get_train_val_data(forecaster, initial_df, val_
 # Fit the model (Standard training)
 forecaster.fit(X_train, y_train, X_val, y_val)
 
-# ==========================================
 # 5. Phase 2: Prediction Loop (No Updates)
-# ==========================================
 print(">>> Phase 2: Static Forecasting (No Adaptation)...")
 
 all_predictions = []
@@ -91,7 +81,6 @@ start_time = time.time()
 # Loop through the test set
 while current_t < len(df_full) - horizon_hours:
     
-    # --- Forecasting Step (Recursive 24h) ---
     # Construct history window for the current prediction point
     current_history = list(target_vals[current_t - config['max_window_size'] : current_t])
     sample_preds = []
@@ -121,9 +110,7 @@ while current_t < len(df_full) - horizon_hours:
 
 print(f"Simulation finished in {time.time() - start_time:.2f} seconds.")
 
-# ==========================================
 # 6. Evaluation
-# ==========================================
 preds = np.array(all_predictions)
 truths = np.array(all_truths)
 
@@ -145,9 +132,7 @@ print(f"==========================================")
 print(f"RMSE: {rmse:.4f}")
 print(f"MAE:  {mae:.4f}")
 
-# ==========================================
 # 7. Visualization
-# ==========================================
 fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 axes = axes.flatten()
 
@@ -177,11 +162,9 @@ for i, idx in enumerate(plot_indices):
     axes[i].legend()
     axes[i].grid(True, alpha=0.3)
 
-# --- [UPDATE] Title with Station Name ---
 plt.suptitle(f"Station: {station_name} | Static Baseline (No Drift Detection)\nRMSE: {rmse:.2f}", fontsize=16)
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-# --- [UPDATE] Dynamic Filename with Station Name ---
 save_filename = f'static_results_{station_name}.png'
 save_path = os.path.join(config['save_base'], save_filename)
 plt.savefig(save_path, dpi=300)

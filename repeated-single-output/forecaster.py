@@ -16,10 +16,6 @@ class Forecaster:
         self.feature_cols = None 
 
     def fit(self, X_train, y_train, X_val=None, y_val=None):
-        """
-        Standard XGBoost Training (No Drift Adaptation logic).
-        Trains a model from scratch.
-        """
         # 1. Log Transform Target
         y_train_log = np.log1p(y_train)
         
@@ -96,7 +92,6 @@ class Forecaster:
         return df
 
     def predict_single_step_vector(self, current_history, exogenous_features):
-        """Helper for manual recursive loop"""
         input_vector = []
         input_vector.extend(current_history[-self.max_window_size:]) 
         input_vector.extend(exogenous_features)
@@ -106,7 +101,6 @@ class Forecaster:
         return np.expm1(pred_log)
 
     def _make_instances(self, df, horizon):
-        """Helper for data creation"""
         X, y = [], []
         target = df[self.target_column].values
         feats = df[self.feature_cols].values
